@@ -20,7 +20,7 @@ namespace LifeBackup.Api.Controllers
 
         [HttpPost]
         [Route("{bucketName}/add")]
-        public async Task<ActionResult<AddFileResponse>> AddFiles(string bucketName, IList<IFormFile> formFiles)
+        public ActionResult<AddFileResponse> AddFiles(string bucketName, IList<IFormFile> formFiles)
         {
             if (formFiles is null)
             {
@@ -29,10 +29,19 @@ namespace LifeBackup.Api.Controllers
 
             AddFileResponse response = _fileRepository.UploadFiles(bucketName, formFiles);
 
-            if(response is null)
+            if (response is null)
             {
                 return BadRequest();
             }
+
+            return Ok(response);
+        }
+
+        [HttpGet]
+        [Route("{bucketName}/list")]
+        public async Task<ActionResult<IEnumerable<ListFileResponse>>> ListFilesAsync(string bucketName)
+        {
+            IEnumerable<ListFileResponse> response = await _fileRepository.ListFilesAsync(bucketName);
 
             return Ok(response);
         }

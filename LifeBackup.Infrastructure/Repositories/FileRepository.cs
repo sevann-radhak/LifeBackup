@@ -58,5 +58,18 @@ namespace LifeBackup.Infrastructure.Repositories
                 PreSignedUrl = response
             };
         }
+
+        public async Task<IEnumerable<ListFileResponse>> ListFilesAsync(string bucketName) 
+        {
+            var response = await _s3Client.ListObjectsAsync(bucketName);
+
+            return response.S3Objects.Select(b => new ListFileResponse 
+            {
+                BubketName = b.BucketName,
+                Key = b.Key,
+                Owner = b.Owner.DisplayName,
+                Size = b.Size
+            });
+        }
     }
 }
