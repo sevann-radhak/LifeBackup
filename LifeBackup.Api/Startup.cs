@@ -1,4 +1,6 @@
 using Amazon.S3;
+using LifeBackup.Core.Interfaces;
+using LifeBackup.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
@@ -25,6 +27,9 @@ namespace LifeBackup.Api
         {
             //services.AddRazorPages();
             services.AddAWSService<IAmazonS3>(Configuration.GetAWSOptions());
+            services.AddSingleton<IBucketRepository, BucketRepository>();
+            services.AddSingleton<IFileRepository, FileRepository>();
+
             services.AddMvc();
         }
 
@@ -61,8 +66,13 @@ namespace LifeBackup.Api
                 await context.Response.WriteAsync(result);
             }));
 
+            app.UseStaticFiles();
+            app.UseRouting();
 
-            app.UseMvc();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}");
+            });
 
             //app.UseEndpoints(endpoints =>
             //{
