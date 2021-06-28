@@ -17,7 +17,7 @@ namespace LifeBackup.Infrastructure.Repositories
             _s3Client = s3Client;
         }
 
-        public async Task<CreateBucketResponse> CreateBucketAsync(string bucketName)
+        public async Task<BucketResponse> CreateBucketAsync(string bucketName)
         {
             PutBucketRequest request = new()
             {
@@ -27,7 +27,7 @@ namespace LifeBackup.Infrastructure.Repositories
 
             PutBucketResponse response = await _s3Client.PutBucketAsync(request);
 
-            return new CreateBucketResponse
+            return new BucketResponse
             {
                 BucketName = bucketName,
                 RequestId = response?.ResponseMetadata?.RequestId
@@ -37,6 +37,17 @@ namespace LifeBackup.Infrastructure.Repositories
         public async Task<bool> DoesS3BucketExistAsync(string bucketName)
         {
             return await _s3Client.DoesS3BucketExistAsync(bucketName);
+        }
+
+        public async Task<BucketResponse> DeleteS3BucketAsync(string bucketName)
+        {
+            DeleteBucketResponse response = await _s3Client.DeleteBucketAsync(bucketName);
+
+            return new BucketResponse
+            {
+                BucketName = bucketName,
+                RequestId = response?.ResponseMetadata?.RequestId
+            };
         }
 
         public async Task<IEnumerable<ListS3BucketResponse>> ListBucketsAsync()

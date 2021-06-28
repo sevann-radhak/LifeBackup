@@ -17,19 +17,9 @@ namespace LifeBackup.Api.Controllers
             _bucketRepository = bucketRepository;
         }
 
-
-        [HttpGet]
-        [Route("ListBuckets")]
-        public async Task<ActionResult<IEnumerable<ListS3BucketResponse>>> ListBucketsAsync()
-        {
-            IEnumerable<ListS3BucketResponse> response = await _bucketRepository.ListBucketsAsync();
-            return Ok(response);
-        }
-
-
         [HttpPost]
         [Route("create/{bucketName}")]
-        public async Task<ActionResult<CreateBucketResponse>> CreateS3BucketAsync([FromRoute] string bucketName)
+        public async Task<ActionResult<BucketResponse>> CreateS3BucketAsync([FromRoute] string bucketName)
         {
             bool bucketExists = await _bucketRepository.DoesS3BucketExistAsync(bucketName);
 
@@ -38,11 +28,27 @@ namespace LifeBackup.Api.Controllers
                 return BadRequest($"Error: S3 Bucket {bucketName} already exists.");
             }
 
-            CreateBucketResponse response = await _bucketRepository.CreateBucketAsync(bucketName);
+            BucketResponse response = await _bucketRepository.CreateBucketAsync(bucketName);
 
             return response == null
                 ? BadRequest()
                 : Ok(response);
+        }
+
+        [HttpDelete]
+        [Route("delete/{bucketName}")]
+        public async Task<IActionResult> DeleteBucketAsync(string bucketName)
+        {
+            BucketResponse response = await _bucketRepository.DeleteS3BucketAsync(bucketName);
+            return Ok(response);
+        }
+
+        [HttpGet]
+        [Route("ListBuckets")]
+        public async Task<ActionResult<IEnumerable<ListS3BucketResponse>>> ListBucketsAsync()
+        {
+            IEnumerable<ListS3BucketResponse> response = await _bucketRepository.ListBucketsAsync();
+            return Ok(response);
         }
     }
 }
