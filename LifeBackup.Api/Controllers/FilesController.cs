@@ -37,6 +37,14 @@ namespace LifeBackup.Api.Controllers
             return Ok(response);
         }
 
+        [HttpDelete]
+        [Route("{bucketName}/delete/{fileName}")]
+        public async Task<ActionResult<DeleteFileResposne>> DeleteFileAsync(string bucketName, string fileName)
+        {
+            DeleteFileResposne response = await _fileRepository.DeleteFileAsync(bucketName, fileName);
+            return Ok(response);
+        }
+
         [HttpGet]
         [Route("{bucketName}/download/{fileName}")]
         public async Task<IActionResult> DownloadFileAsync(string bucketName, string fileName)

@@ -59,6 +59,16 @@ namespace LifeBackup.Infrastructure.Repositories
             };
         }
 
+        public async Task<DeleteFileResposne> DeleteFileAsync(string bucketName, string fileName)
+        {
+            DeleteObjectsRequest multiObjectDeleteRequest = new() { BucketName = bucketName };
+            multiObjectDeleteRequest.AddKey(fileName);
+
+            DeleteObjectsResponse response = await _s3Client.DeleteObjectsAsync(multiObjectDeleteRequest);
+
+            return new DeleteFileResposne { NumberOfDeletedObjects = response.DeletedObjects.Count };
+        }
+
         public async Task DownloadFileAsync(string bucketName, string fileName)
         {
             string pathAndFileName = $"C:\\S3Temp\\{fileName}"; //TODO: improve -> contact directories
