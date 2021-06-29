@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -62,6 +63,33 @@ namespace LifeBackup.Infrastructure.Repositories
             using TransferUtility transferUtility = new(_s3Client);
 
             await transferUtility.DownloadAsync(downloadRequest);
+        }
+
+        public async Task<GetJsonObjectResponse> GetJsonObjectAsync(string bucketName, string fileName)
+        {
+            GetObjectRequest request = new()
+            {
+                BucketName = bucketName,
+                Key = fileName
+            };
+
+            GetObjectResponse response = await _s3Client.GetObjectAsync(request);
+
+            using StreamReader reader = new(response.ResponseStream);
+            string contents = reader.ReadToEnd();
+
+            try
+            {
+                return JsonConvert.DeserializeObject<GetJsonObjectResponse>(contents);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error Message: {ex.Message}");
+                Console.WriteLine($"Error InnerException Message: {ex.InnerException?.Message}");
+                Console.WriteLine($"Error InnerException InnerException Message: {ex.InnerException?.InnerException?.Message}");
+
+                throw new Exception("Error while reading file from bucket. Check console log.");
+            }
         }
 
         public async Task<IEnumerable<ListFileResponse>> ListFilesAsync(string bucketName)

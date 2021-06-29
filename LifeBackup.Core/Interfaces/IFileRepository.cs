@@ -10,6 +10,7 @@ namespace LifeBackup.Core.Interfaces
         public Task AddJsonObjectAsync(string bucketName, AddJsonObjectRequest request);
         public Task<DeleteFileResposne> DeleteFileAsync(string bucketName, string fileName);
         public Task DownloadFileAsync(string bucketName, string fileName);
+        public Task<GetJsonObjectResponse> GetJsonObjectAsync(string bucketName, string fileName);
         public Task<IEnumerable<ListFileResponse>> ListFilesAsync(string bucketName);
         public AddFileResponse UploadFiles(string bucketName, IList<IFormFile> formFiles);
     }

@@ -69,6 +69,15 @@ namespace LifeBackup.Api.Controllers
         }
 
         [HttpGet]
+        [Route("{bucketName}/getJsonObject")]
+        public async Task<ActionResult<GetJsonObjectResponse>> GetJsonObjectAsync(string bucketName, string fileName)
+        {
+            GetJsonObjectResponse response = await _fileRepository.GetJsonObjectAsync(bucketName, fileName);
+
+            return Ok(response);
+        }
+
+        [HttpGet]
         [Route("{bucketName}/list")]
         public async Task<ActionResult<IEnumerable<ListFileResponse>>> ListFilesAsync(string bucketName)
         {
