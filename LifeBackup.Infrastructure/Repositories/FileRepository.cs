@@ -59,11 +59,27 @@ namespace LifeBackup.Infrastructure.Repositories
             };
         }
 
-        public async Task<IEnumerable<ListFileResponse>> ListFilesAsync(string bucketName) 
+        public async Task DownloadFileAsync(string bucketName, string fileName)
         {
-            var response = await _s3Client.ListObjectsAsync(bucketName);
+            string pathAndFileName = $"C:\\S3Temp\\{fileName}"; //TODO: improve -> contact directories
 
-            return response.S3Objects.Select(b => new ListFileResponse 
+            TransferUtilityDownloadRequest downloadRequest = new()
+            {
+                BucketName = bucketName,
+                Key = fileName,
+                FilePath = pathAndFileName
+            };
+
+            using TransferUtility transferUtility = new(_s3Client);
+
+            await transferUtility.DownloadAsync(downloadRequest);
+        }
+
+        public async Task<IEnumerable<ListFileResponse>> ListFilesAsync(string bucketName)
+        {
+            ListObjectsResponse response = await _s3Client.ListObjectsAsync(bucketName);
+
+            return response.S3Objects.Select(b => new ListFileResponse
             {
                 BubketName = b.BucketName,
                 Key = b.Key,

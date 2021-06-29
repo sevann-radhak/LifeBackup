@@ -38,6 +38,15 @@ namespace LifeBackup.Api.Controllers
         }
 
         [HttpGet]
+        [Route("{bucketName}/download/{fileName}")]
+        public async Task<IActionResult> DownloadFileAsync(string bucketName, string fileName)
+        {
+            await _fileRepository.DownloadFileAsync(bucketName, fileName);
+
+            return Ok();
+        }
+
+        [HttpGet]
         [Route("{bucketName}/list")]
         public async Task<ActionResult<IEnumerable<ListFileResponse>>> ListFilesAsync(string bucketName)
         {
