@@ -4,6 +4,7 @@ using Amazon.S3.Transfer;
 using LifeBackup.Core.Communication.Files;
 using LifeBackup.Core.Interfaces;
 using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,43 +21,21 @@ namespace LifeBackup.Infrastructure.Repositories
             _s3Client = s3Client;
         }
 
-        public AddFileResponse UploadFiles(string bucketName, IList<IFormFile> formFiles)
+        public async Task AddJsonObjectAsync(string bucketName, AddJsonObjectRequest request)
         {
-            List<string> response = new();
+            DateTime createdOnUTC = DateTime.UtcNow;
+            request.Id = Guid.NewGuid();
+            request.TimeSent = createdOnUTC;
+            string s3Key = $"{createdOnUTC:yyyy}/{createdOnUTC:MM}/{createdOnUTC:dd}/{request.Id}";
 
-            _ = formFiles.Select(f =>
+            PutObjectRequest putObjectRequest = new()
             {
-                TransferUtilityUploadRequest uploadRequest = new()
-                {
-                    BucketName = bucketName,
-                    CannedACL = S3CannedACL.NoACL,
-                    InputStream = f.OpenReadStream(),
-                    Key = f.FileName
-                };
-
-                using (TransferUtility fileTransferUtility = new(_s3Client))
-                {
-                    fileTransferUtility.UploadAsync(uploadRequest).Wait();
-                };
-
-                GetPreSignedUrlRequest expiryUrlRequest = new()
-                {
-                    BucketName = bucketName,
-                    Key = f.FileName,
-                    Expires = DateTime.Now.AddDays(1)
-                };
-
-                string url = _s3Client.GetPreSignedURL(expiryUrlRequest);
-                response.Add(url);
-
-                return f;
-            })
-            .ToArray();
-
-            return new AddFileResponse
-            {
-                PreSignedUrl = response
+                BucketName = bucketName,
+                Key = s3Key,
+                ContentBody = JsonConvert.SerializeObject(request)
             };
+
+            await _s3Client.PutObjectAsync(putObjectRequest);
         }
 
         public async Task<DeleteFileResposne> DeleteFileAsync(string bucketName, string fileName)
@@ -96,6 +75,45 @@ namespace LifeBackup.Infrastructure.Repositories
                 Owner = b.Owner.DisplayName,
                 Size = b.Size
             });
+        }
+
+        public AddFileResponse UploadFiles(string bucketName, IList<IFormFile> formFiles)
+        {
+            List<string> response = new();
+
+            _ = formFiles.Select(f =>
+            {
+                TransferUtilityUploadRequest uploadRequest = new()
+                {
+                    BucketName = bucketName,
+                    CannedACL = S3CannedACL.NoACL,
+                    InputStream = f.OpenReadStream(),
+                    Key = f.FileName
+                };
+
+                using (TransferUtility fileTransferUtility = new(_s3Client))
+                {
+                    fileTransferUtility.UploadAsync(uploadRequest).Wait();
+                };
+
+                GetPreSignedUrlRequest expiryUrlRequest = new()
+                {
+                    BucketName = bucketName,
+                    Key = f.FileName,
+                    Expires = DateTime.Now.AddDays(1)
+                };
+
+                string url = _s3Client.GetPreSignedURL(expiryUrlRequest);
+                response.Add(url);
+
+                return f;
+            })
+            .ToArray();
+
+            return new AddFileResponse
+            {
+                PreSignedUrl = response
+            };
         }
     }
 }

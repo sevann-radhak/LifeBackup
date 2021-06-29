@@ -37,6 +37,20 @@ namespace LifeBackup.Api.Controllers
             return Ok(response);
         }
 
+        [HttpPost]
+        [Route("{bucketName}/addJsonObject")]
+        public async Task<ActionResult<AddFileResponse>> AddJsonObjectAsync(string bucketName, AddJsonObjectRequest request)
+        {
+            if (request is null)
+            {
+                return BadRequest("The request does not contain any content to be uploaded.");
+            }
+
+            await _fileRepository.AddJsonObjectAsync(bucketName, request);
+
+            return Ok();
+        }
+
         [HttpDelete]
         [Route("{bucketName}/delete/{fileName}")]
         public async Task<ActionResult<DeleteFileResposne>> DeleteFileAsync(string bucketName, string fileName)
